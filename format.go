@@ -335,7 +335,7 @@ func formatLogfmtValue(value interface{}, term bool) string {
 		// Performance optimization: No need for escaping since the provided
 		// timeFormat doesn't have any escape characters, and escaping is
 		// expensive.
-		return v.Format(timeFormat)
+		return v.Format(termTimeFormat)
 
 	case *big.Int:
 		// Big ints get consumed by the Stringer clause so we need to handle
