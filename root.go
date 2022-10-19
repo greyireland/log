@@ -1,7 +1,9 @@
 package log
 
 import (
+	"fmt"
 	"os"
+	"path/filepath"
 )
 
 var (
@@ -11,7 +13,18 @@ var (
 )
 
 func init() {
-	root.SetHandler(DiscardHandler())
+	filename := filepath.Base(os.Args[0])
+	defaultDir := "logs"
+	MustExist(defaultDir)
+	defaultPath := fmt.Sprintf("%s/%s.log", defaultDir, filename)
+	defaultHandler := NewFileLvlHandler(defaultPath, 1024*1024*2, LvlInfo.String())
+	root.SetHandler(defaultHandler)
+}
+func MustExist(path string) {
+	const perm = 0764 // user rwx, group rw, other r
+	if err := os.MkdirAll(path, perm); err != nil {
+		panic(err)
+	}
 }
 
 // New returns a new logger with the given context.
