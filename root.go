@@ -13,12 +13,14 @@ var (
 )
 
 func init() {
+	root.SetHandler(DiscardHandler())
+}
+func DefaultFileHandler() Handler {
 	filename := filepath.Base(os.Args[0])
 	defaultDir := "logs"
 	MustExist(defaultDir)
 	defaultPath := fmt.Sprintf("%s/%s.log", defaultDir, filename)
-	defaultHandler := NewFileLvlHandler(defaultPath, 1024*1024*2, LvlInfo.String())
-	root.SetHandler(defaultHandler)
+	return NewFileLvlHandler(defaultPath, 1024*1024*2, LvlInfo.String())
 }
 func MustExist(path string) {
 	const perm = 0764 // user rwx, group rw, other r
