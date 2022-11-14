@@ -94,5 +94,5 @@ func Infos(probability float64, msg string, ctx ...interface{}) {
 	root.write(msg, LvlInfo, ctx, skipLevel)
 }
 func Info1(msg string, ctx ...interface{}) {
-	Infos(0.1, msg, ctx)
+	Infos(0.1, msg, ctx...)
 }
