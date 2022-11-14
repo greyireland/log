@@ -2,6 +2,7 @@ package log
 
 import (
 	"fmt"
+	"math/rand"
 	"os"
 	"path/filepath"
 )
@@ -82,4 +83,16 @@ func Crit(msg string, ctx ...interface{}) {
 // Non-zero calldepth skips as many stack frames.
 func Output(msg string, lvl Lvl, calldepth int, ctx ...interface{}) {
 	root.write(msg, lvl, ctx, calldepth+skipLevel)
+}
+
+// To reduce file storage, add probability log, time log
+
+func Infos(probability float64, msg string, ctx ...interface{}) {
+	if rand.Float64() > probability {
+		return
+	}
+	root.write(msg, LvlInfo, ctx, skipLevel)
+}
+func Info1(msg string, ctx ...interface{}) {
+	Infos(0.1, msg, ctx)
 }
