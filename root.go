@@ -5,6 +5,8 @@ import (
 	"math/rand"
 	"os"
 	"path/filepath"
+	"sync"
+	"time"
 )
 
 var (
@@ -92,6 +94,27 @@ func Infos(probability float64, msg string, ctx ...interface{}) {
 		return
 	}
 	root.write(msg, LvlInfo, ctx, skipLevel)
+}
+
+var (
+	logTime = map[string]time.Time{}
+	logLock = sync.Mutex{}
+)
+
+func Infod(duration time.Duration, msg string, ctx ...interface{}) {
+	now := time.Now()
+	logLock.Lock()
+	last := logTime[msg]
+	if now.Sub(last) < duration {
+		logLock.Unlock()
+		return
+	}
+	logTime[msg] = now
+	logLock.Unlock()
+	root.write(msg, LvlInfo, ctx, skipLevel)
+}
+func Infod1(msg string, ctx ...interface{}) {
+	Infod(time.Second, msg, ctx...)
 }
 func Info1(msg string, ctx ...interface{}) {
 	Infos(0.1, msg, ctx...)
