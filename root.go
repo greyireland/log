@@ -2,10 +2,10 @@ package log
 
 import (
 	"fmt"
+	cmap "github.com/orcaman/concurrent-map/v2"
 	"math/rand"
 	"os"
 	"path/filepath"
-	"sync"
 	"time"
 )
 
@@ -97,20 +97,19 @@ func Infos(probability float64, msg string, ctx ...interface{}) {
 }
 
 var (
-	logTime = map[string]time.Time{}
-	logLock = sync.Mutex{}
+	logTime = cmap.New[time.Time]()
 )
 
 func Infod(duration time.Duration, msg string, ctx ...interface{}) {
 	now := time.Now()
-	logLock.Lock()
-	last := logTime[msg]
+	last, exist := logTime.Get(msg)
+	if !exist {
+		last = time.Time{}
+	}
 	if now.Sub(last) < duration {
-		logLock.Unlock()
 		return
 	}
-	logTime[msg] = now
-	logLock.Unlock()
+	logTime.Set(msg, now)
 	root.write(msg, LvlInfo, ctx, skipLevel)
 }
 func Infod1(msg string, ctx ...interface{}) {
