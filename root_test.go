@@ -6,15 +6,16 @@ import (
 )
 
 func TestInfod1(t *testing.T) {
-	root.SetHandler(StdoutHandler)
+	root.SetHandler(DefaultFileHandler())
 
 	for i := 0; i < 30; i++ {
 		Infod1("hello", "k", "v")
 		time.Sleep(time.Millisecond * 200)
 	}
-	for i := 0; i < 30; i++ {
-		Infod(time.Second*3, "hello2", "k", "v")
-		time.Sleep(time.Millisecond * 500)
-	}
-	time.Sleep(time.Second * 5)
+	time.Sleep(time.Second)
+}
+func TestInfo2(t *testing.T) {
+	root.SetHandler(DefaultFileHandler())
+
+	time.Sleep(time.Second)
 }

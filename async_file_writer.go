@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -79,19 +80,16 @@ func removeExpiredLogFiles(dir string, expire time.Duration) error {
 
 	// walk through the directory
 	return filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			return err
-		}
 
 		// delete log files that are older than 7 days
 		ext := filepath.Ext(info.Name())
-		t, err := time.Parse("2006-01-02_15", ext)
+		t, err := time.Parse("2006-01-02_15", strings.Trim(ext, "."))
 		if err != nil {
 			return nil
 		}
 		if !info.IsDir() {
 			// check if the file is older than 7 days
-			if now.Sub(info.ModTime()) > expire && now.Sub(t) > expire {
+			if now.Sub(t) > expire {
 				// delete the file
 				err := os.Remove(path)
 				if err != nil {
