@@ -5,10 +5,11 @@ import (
 	"os"
 	"strings"
 	"testing"
+	"time"
 )
 
 func TestWriter(t *testing.T) {
-	w := NewAsyncFileWriter("./hello.log", 100)
+	w := NewAsyncFileWriter("./hello.log", 100, time.Hour)
 	w.Start()
 	w.Write([]byte("hello\n"))
 	w.Write([]byte("world\n"))

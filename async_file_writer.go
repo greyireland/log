@@ -57,9 +57,10 @@ type AsyncFileWriter struct {
 	buf        chan []byte
 	stop       chan struct{}
 	hourTicker *HourTicker
+	expire     time.Duration
 }
 
-func NewAsyncFileWriter(filePath string, bufSize int64) *AsyncFileWriter {
+func NewAsyncFileWriter(filePath string, bufSize int64, expire time.Duration) *AsyncFileWriter {
 	absFilePath, err := filepath.Abs(filePath)
 	if err != nil {
 		panic(fmt.Sprintf("get file path of logger error. filePath=%s, err=%s", filePath, err))
@@ -70,14 +71,43 @@ func NewAsyncFileWriter(filePath string, bufSize int64) *AsyncFileWriter {
 		buf:        make(chan []byte, bufSize),
 		stop:       make(chan struct{}),
 		hourTicker: NewHourTicker(),
+		expire:     expire,
 	}
 }
+func removeExpiredLogFiles(dir string, expire time.Duration) error {
+	now := time.Now()
 
+	// walk through the directory
+	return filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+
+		// delete log files that are older than 7 days
+		if !info.IsDir() && filepath.Ext(info.Name()) == ".log" {
+			// check if the file is older than 7 days
+			if now.Sub(info.ModTime()) > expire {
+				// delete the file
+				err := os.Remove(path)
+				if err != nil {
+					return fmt.Errorf("failed to remove file %s: %w", path, err)
+				}
+				fmt.Printf("Removed old log file: %s\n", path)
+			}
+		}
+		return nil
+	})
+}
 func (w *AsyncFileWriter) initLogFile() error {
 	var (
 		fd  *os.File
 		err error
 	)
+	//clear expired log files
+	err = removeExpiredLogFiles(filepath.Dir(w.filePath), w.expire)
+	if err != nil {
+		return err
+	}
 
 	realFilePath := w.timeFilePath(w.filePath)
 	fd, err = os.OpenFile(realFilePath, os.O_CREATE|os.O_APPEND|os.O_RDWR, 0644)
