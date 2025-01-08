@@ -84,9 +84,14 @@ func removeExpiredLogFiles(dir string, expire time.Duration) error {
 		}
 
 		// delete log files that are older than 7 days
-		if !info.IsDir() && filepath.Ext(info.Name()) == ".log" {
+		ext := filepath.Ext(info.Name())
+		t, err := time.Parse("2006-01-02_15", ext)
+		if err != nil {
+			return nil
+		}
+		if !info.IsDir() {
 			// check if the file is older than 7 days
-			if now.Sub(info.ModTime()) > expire {
+			if now.Sub(info.ModTime()) > expire && now.Sub(t) > expire {
 				// delete the file
 				err := os.Remove(path)
 				if err != nil {
